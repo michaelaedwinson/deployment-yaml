@@ -48,6 +48,7 @@ metadata:
   platform_serial: SHW003
   seanav: 3.9.5-cr
   seapld: 2.26.0-r
+  membrane_serial: SHW003_1
 glider_devices:
   ctd:
     make: RBR
