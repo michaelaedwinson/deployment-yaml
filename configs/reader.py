@@ -164,7 +164,7 @@ def expected_values_checker(cfg, expected_values, section=''):
             continue
         if str(var) != str(expected_values[key]):
             _log.error(f"Bad value for {section} {key} = {var}. Expected {expected_values[key]}")
-
+            
 
 class ConfigReader:
     def __init__(self, mission_dir):
@@ -267,6 +267,72 @@ class ConfigReader:
                 expected_values_checker(cfg[sensor], expected_values, section=sensor)
         return
 
+
+    def spell_check(self):
+        _log.info("Spellcheck")
+        # spell checking for some terms in the sensors
+        base_setting_strings = {
+            'acq.1': ['depth', 'period', 'phase', 'yo'],
+            'acq.2': ['depth', 'period', 'phase', 'yo'],
+            'cfg': ['WarmUpPeriod', 'phaseswitch', 'periodswitch']
+        }
+        sensor_specific_setting_strings = {
+            'AD2CP': {
+                'cfg': ['computeBI', 'log_pld', 'log_ad2cp', 'cells_sub', 'PLAN', 'AVG', 'BT', 'TMAVG', 'TMBT', 'BURST', 'TMBURST'],
+            },
+            'AROD_FT': {
+                'cfg': ['analog'],
+            },
+            'GPCTD': {
+                'cfg': ['oxygenInstalled', 'log_gpctd']
+            },
+            'LEGATO': {
+                'cfg': ['codaInstalled', 'tridenteInstalled', 'log_legato'],
+                'cfg.TRIDENTE': [f'channel{x}' for x in range(7)],
+            },
+            'LEGATO4': {
+                'cfg': ['log_legato'],
+                'cfg.sensor1': ['installed', 'prefix', 'ch1', 'ch2', 'ch3'],
+                'cfg.sensor2': ['installed', 'prefix', 'ch1', 'ch2', 'ch3'],
+            },
+            'MPE-PAR': {},
+            'TRIDENTE': {
+                'cfg': ['frequency', 'log_tridente', 'channel1', 'channel2', 'channel3'],
+            },
+        }
+        sensor_setting_strings = {}
+        for sensor, settings in sensor_specific_setting_strings.items():
+            settings_dict = base_setting_strings.copy()
+            for key, val in sensor_specific_setting_strings[sensor].items():
+                if key in base_setting_strings.keys():
+                    settings_dict[key] = base_setting_strings[key] + val
+                else:
+                    settings_dict[key] = val
+            sensor_setting_strings[sensor] = settings_dict
+
+        cfg = self.config_dict
+        for key, val in cfg.items():
+            if type(val) is not dict:
+                continue
+            if key not in sensor_setting_strings.keys():
+                _log.warning(f"Did not find spellchecks for sensor {key}, not checking")
+                continue
+            acceptable_setting_strings = sensor_setting_strings[key]
+
+            for sensor_setting, setting_value in val.items():
+                if len(sensor_setting.split('.')) == 3:
+                    setting_group, setting_str = sensor_setting.rsplit('.', maxsplit=1)
+                elif len(sensor_setting.split('.')) == 2:
+                    setting_group, setting_str = sensor_setting.split('.')
+                else:
+                    continue
+                if setting_group not in acceptable_setting_strings.keys():
+                    _log.error(f"SPELLCHECK Did not find spellings in {key} for {sensor_setting}")
+                    continue
+                if setting_str not in acceptable_setting_strings[setting_group]:
+                    _log.error(f"SPELLCHECK Possible spelling error in {key}: {sensor_setting} expected one of {acceptable_setting_strings[setting_group]}")
+
+
     def compare_last_mission(self):
         existing_yml = list(self.yaml_dir.glob(f"{self.platform_id}*yml"))
         if len(existing_yml) < 2:
@@ -356,6 +422,7 @@ class ConfigReader:
     def run(self):
         _log.info(f"START check at {str(datetime.datetime.now())[:19]} in {self.mission_dir}")
         self.read_configs()
+        self.spell_check()
         #self.check_mission_id()
         self.check_default_params()
         self.compare_last_mission()
@@ -488,8 +555,7 @@ def run_checker_on_dir(file_dir):
     return True
 
 
-if __name__ == '__main__':
-
+def main():
     args = sys.argv
     if len(args) > 1:
         config = ConfigReader(args[1])
@@ -512,3 +578,7 @@ if __name__ == '__main__':
             ]
         )
         run_local()
+
+
+if __name__ == '__main__':
+    main()
