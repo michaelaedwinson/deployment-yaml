@@ -282,7 +282,17 @@ class ConfigReader:
         self.alseamar_config = self.alseamar_config | read_nav_config(alseamar_dir / 'sea.cfg', defaults_file=True)
         self.alseamar_config = self.alseamar_config | read_pld_config(alseamar_dir / 'seapayload.cfg', defaults_file=True)
         # Add values missing from alseamar conf files
-        for extra_key in ['CCUversion:>','seanav', 'drf.dtpid.kp', 'drf.dtpid.kd', 'drf.dtpid.ki', 'drf.ppid.ki']:
+        for extra_key in [
+            'CCUversion:>',
+            'seanav', 
+            'drf.dtpid.kp',
+            'drf.dtpid.kd',
+            'drf.dtpid.ki',
+            'drf.ppid.ki',
+            'security.fly.timeout',
+            'vspeed.inib.immersion',
+            'inflecting.fly.enable',
+          ]:
             self.alseamar_config[extra_key] = ''
 
         check_config_alseamar_defaults(self.config_dict, self.alseamar_config)
@@ -334,7 +344,7 @@ class ConfigReader:
                 'cfg': ['oxygenInstalled', 'log_gpctd']
             },
             'LEGATO': {
-                'cfg': ['codaInstalled', 'tridenteInstalled', 'log_legato'],
+                'cfg': ['codaInstalled', 'tridenteInstalled', 'log_legato', 'computeSV'],
                 'cfg.TRIDENTE': [f'channel{x}' for x in range(7)],
             },
             'LEGATO4': {
@@ -592,12 +602,17 @@ def run_checker_on_dir(file_dir):
 
     return True
 
-def run_local():
-    for file_dir in [
+def run_local(all_files=False):
+    if all_files:
+        msn_files = list(Path("/mnt/docs/1_Operations/Missions/").rglob("*sea.msn"))
+        directories = [fn.parent for fn in msn_files]
+    else:
+        directories = [
         '/mnt/docs/1_Operations/Missions/03_SAMBA_02/07_SAMBA_02_007/SHW003_PLD174/20260729_M14',
         '/mnt/docs/1_Operations/Missions/21_InTail/SEA076_PLD090/20260614_M48',
         "/mnt/docs/1_Operations/Missions/03_SAMBA_02/07_SAMBA_02_007/SEA056_PLD073/20260314_M103",
-    ]:
+    ]
+    for file_dir in directories:
         conf = ConfigReader(file_dir)
         conf.init_local_logger()
         conf.write_yaml_to_mission_dir = True
@@ -621,11 +636,11 @@ def main():
             level=logging.ERROR,
             format=f"%(levelname)-10s %(mission_str)-12s %(message)s",
             handlers=[
-                logging.FileHandler(f'/data/log/config_checker_all_files.log', mode='a'),
+                logging.FileHandler(f'/data/log/config_checker_all_files.log', mode='w'),
                 logging.StreamHandler()
             ]
         )
-        run_local()
+        run_local(all_files=False)
 
 
 if __name__ == '__main__':
