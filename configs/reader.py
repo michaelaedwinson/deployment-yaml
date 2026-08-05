@@ -189,12 +189,12 @@ def check_config_alseamar_defaults(mission_cfg, alseamar_cfg):
         if key in skips_keys:
             continue
         if key not in alseamar_cfg.keys():
-            _log.error(f"Did not find {key} in alseamar default config. Possibly a typo or bad value")
+            _log.error(f"Did not find `{key}` in alseamar default config. Possibly a typo or bad value")
             continue
         if type(val) is dict:
             for sub_key, sub_val in val.items():
                 if sub_key not in alseamar_cfg[key].keys():
-                    _log.error(f"Did not find {key}:{sub_key} in alseamar default config. Possibly a typo or bad value")
+                    _log.error(f"Did not find `{key}`:`{sub_key}` in alseamar default config. Possibly a typo or bad value")
     return
 
 
@@ -281,6 +281,9 @@ class ConfigReader:
         self.alseamar_config = self.alseamar_config | read_nav_config(alseamar_dir / 'sea.msn', defaults_file=True)
         self.alseamar_config = self.alseamar_config | read_nav_config(alseamar_dir / 'sea.cfg', defaults_file=True)
         self.alseamar_config = self.alseamar_config | read_pld_config(alseamar_dir / 'seapayload.cfg', defaults_file=True)
+        # Add values missing from alseamar conf files
+        for extra_key in ['CCUversion:>','seanav', 'drf.dtpid.kp', 'drf.dtpid.kd', 'drf.dtpid.ki', 'drf.ppid.ki']:
+            self.alseamar_config[extra_key] = ''
 
         check_config_alseamar_defaults(self.config_dict, self.alseamar_config)
 
