@@ -99,7 +99,7 @@ def list_missions(to_skip=()):
 
     return good_missions
 
-def read_nav_config(config_file):
+def read_nav_config(config_file, defaults_file=False):
     sea_msn = {}
     with open(config_file) as fin:
         for line in fin.readlines():
@@ -108,7 +108,10 @@ def read_nav_config(config_file):
             if not line:
                 continue
             if line[0] == ';':
-                continue
+                if defaults_file:
+                    line = line[1:]
+                else:
+                    continue
             if "=" not in line:
                 continue
             if ':' in line:
@@ -120,7 +123,7 @@ def read_nav_config(config_file):
     return sea_msn
 
 
-def read_pld_config(config_file):
+def read_pld_config(config_file, defaults_file=False):
     pld_params = {}
     read_device_params = True
     read_global = True
@@ -136,6 +139,12 @@ def read_pld_config(config_file):
                 read_global = True
             if 'Slotsconfiguration' in line:
                 read_global = False
+            if len(line) > 4:
+                if line[0] == '[' and line[-1] == ']' and defaults_file:
+                    devices_dict[line[1:-1]] = {}
+                    device_dict_key =line[1:-1]
+                    read_device_params = True
+                    continue
             if line[1:-1] in devices_dict.keys():
                 read_device_params = True
                 device_dict_key = line[1:-1]
@@ -155,6 +164,15 @@ def read_pld_config(config_file):
 
             if read_global:
                 pld_params[key] = var
+    if defaults_file:
+        # Add values for the acq.2 that some gliders have
+        for key, val in devices_dict.items():
+            if type(val) is dict:
+                extras = {}
+                for sub_key, sub_val in val.items():
+                    if 'acq.1' in sub_key:
+                        extras[sub_key.replace('1', '2')] = sub_val
+                devices_dict[key] = val | extras
     return pld_params | devices_dict
 
 
@@ -165,6 +183,20 @@ def expected_values_checker(cfg, expected_values, section=''):
         if str(var) != str(expected_values[key]):
             _log.error(f"Bad value for {section} {key} = {var}. Expected {expected_values[key]}")
             
+def check_config_alseamar_defaults(mission_cfg, alseamar_cfg):
+    skips_keys = ['config_file_directory', 'id']
+    for key, val in mission_cfg.items():
+        if key in skips_keys:
+            continue
+        if key not in alseamar_cfg.keys():
+            _log.error(f"Did not find {key} in alseamar default config. Possibly a typo or bad value")
+            continue
+        if type(val) is dict:
+            for sub_key, sub_val in val.items():
+                if sub_key not in alseamar_cfg[key].keys():
+                    _log.error(f"Did not find {key}:{sub_key} in alseamar default config. Possibly a typo or bad value")
+    return
+
 
 class ConfigReader:
     def __init__(self, mission_dir):
@@ -197,6 +229,7 @@ class ConfigReader:
         self.mission_num = int(mission_str_raw.split('_M')[-1])
         self.mission_str = f"{self.platform_id}_M{self.mission_num}"
         self.config_dict = {"config_file_directory": str(self.mission_dir)}
+        self.alseamar_config = {}
         self.yaml_dir = yaml_dir
         self.yaml_path = self.yaml_dir  / f"{self.mission_str}.yml"
         self.write_yaml_to_mission_dir = False
@@ -241,6 +274,15 @@ class ConfigReader:
         else:
             cfg_dict = read_pld_config(sea_pld)
             self.config_dict = self.config_dict | cfg_dict
+            
+    def read_alseamar_configs(self):
+        _log.info("Check against alseamar defaults")
+        alseamar_dir = script_dir / 'alseamar'
+        self.alseamar_config = self.alseamar_config | read_nav_config(alseamar_dir / 'sea.msn', defaults_file=True)
+        self.alseamar_config = self.alseamar_config | read_nav_config(alseamar_dir / 'sea.cfg', defaults_file=True)
+        self.alseamar_config = self.alseamar_config | read_pld_config(alseamar_dir / 'seapayload.cfg', defaults_file=True)
+
+        check_config_alseamar_defaults(self.config_dict, self.alseamar_config)
 
     def check_mission_id(self):
         if not 'id' in self.config_dict.keys() or not 'mission.num' in self.config_dict.keys():
@@ -256,6 +298,8 @@ class ConfigReader:
             "iridium.timeout.inactivity2": "600",
             'security.batteries.low': '23',
             'mission.mode': '0',
+            'iridium.call.main': '00881600005212',
+            'iridium.call.rescue': '00881600005212',
         }
         cfg = self.config_dict
         expected_values_checker(cfg, expected_values)
@@ -422,8 +466,8 @@ class ConfigReader:
     def run(self):
         _log.info(f"START check at {str(datetime.datetime.now())[:19]} in {self.mission_dir}")
         self.read_configs()
+        self.read_alseamar_configs()
         self.spell_check()
-        #self.check_mission_id()
         self.check_default_params()
         self.compare_last_mission()
         self.compare_pyglider_yaml()
@@ -515,15 +559,6 @@ def run_all():
     run_all_samba()
     missions_without_cfg()
 
-def run_local():
-    for file_dir in [#"/mnt/docs/1_Operations/Missions/23_Phycoglider_2/SEA077_PLD094/SEA077_M44",
-                     "/mnt/docs/1_Operations/Missions/03_SAMBA_02/07_SAMBA_02_007/SEA056_PLD073/202603DD_M103",
-                    #"/mnt/docs/1_Operations/Missions/03_SAMBA_02/06_SAMBA_02_006/SEA067_PLD091/20250804_M78",
-    ]:
-        conf = ConfigReader(file_dir)
-        conf.init_local_logger()
-        conf.write_yaml_to_mission_dir = True
-        conf.run()
 
 def run_checker_on_dir(file_dir):
     logging.basicConfig(
@@ -554,6 +589,16 @@ def run_checker_on_dir(file_dir):
 
     return True
 
+def run_local():
+    for file_dir in [
+        '/mnt/docs/1_Operations/Missions/03_SAMBA_02/07_SAMBA_02_007/SHW003_PLD174/20260729_M14',
+        '/mnt/docs/1_Operations/Missions/21_InTail/SEA076_PLD090/20260614_M48',
+        "/mnt/docs/1_Operations/Missions/03_SAMBA_02/07_SAMBA_02_007/SEA056_PLD073/20260314_M103",
+    ]:
+        conf = ConfigReader(file_dir)
+        conf.init_local_logger()
+        conf.write_yaml_to_mission_dir = True
+        conf.run()
 
 def main():
     args = sys.argv
@@ -570,7 +615,7 @@ def main():
         f = ContextFilter()
         _log.addFilter(f)
         logging.basicConfig(
-            level=logging.INFO,
+            level=logging.ERROR,
             format=f"%(levelname)-10s %(mission_str)-12s %(message)s",
             handlers=[
                 logging.FileHandler(f'/data/log/config_checker_all_files.log', mode='a'),
