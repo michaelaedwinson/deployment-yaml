@@ -26,9 +26,10 @@ metadata:
   standard_name_vocabulary: CF STandard Name Table v49
   sea_name: Baltic
   transmission_system: IRIDIUM
-  glider_name: Trift
-  wmo_id: '6801675'
-  comment: 'Payload was disabled from 2026-08-02 until 2026-08-06 for battery preservation. Tridente phycocyanin channel values are suspect. The cause is under investigation and appears to be due to bad calibration https://observations.voiceoftheocean.org/static/img/reports/Quality_Issue_5_tridente_phycocyanin.pdf. Chlorophyll data is also suspect after Tridente calibration, see qc.'
+  glider_name: Minna
+  wmo_id: '8901001'
+  comment: Tridente phycocyanin channel values are suspect. The cause is under investigation
+    and appears to be due to bad calibration https://observations.voiceoftheocean.org/static/img/reports/Quality_Issue_5_tridente_phycocyanin.pdf
   contributor_name: Callum Rollo, Louise Biddle, Olle Glader, Aleksandra Mazur, Marcus
     Melin, Gunnar Johnsson, Andrew Birkett, Michaela Edwinson, Anna Willstrand Wranne,
     Adele Maciute, Aaron Mau, Martin Mohrmann
@@ -38,78 +39,78 @@ metadata:
   creator_email: callum.rollo@voiceoftheocean.org
   creator_name: Callum Rollo
   creator_url: https://observations.voiceoftheocean.org
-  deployment_id: '107'
+  deployment_id: '50'
   deployment_name: SAMBA
   project: SAMBA
-  project_url: https://voiceoftheocean.org/ocean-observatories/
+  project_url: voiceoftheocean.org/ocean-observatories/
   summary: ' Part of SAMBA continuous monitoring'
-  platform_serial: SEA056
-  seanav: 3.9.4 -r
+  platform_serial: SEA079
+  seanav: 3.9.26 -r
   seapld: 2.26.0 -r
 glider_devices:
   ctd:
     make: RBR
     model: legato
-    serial: '206523'
+    serial: '205046'
     long_name: RBR legato CTD
     make_model: RBR legato CTD
     factory_calibrated: 'Yes'
-    calibration_date: '2024-02-23'
+    calibration_date: '2023-09-05'
   optics:
     make: RBR
     model: Tridente
-    serial: '238735'
+    serial: '238738'
     long_name: RBR Tridente
     make_model: RBR Tridente
     factory_calibrated: 'Yes'
-    calibration_date: '2026-04-07'
+    calibration_date: '2025-06-20'
     calibration_parameters:
-      Chl_C0: 24.022298e-03
-      Chl_C1: 3.7170145e06
-      Chl_C2: 100e-03
-      PC_C0: -667.2761e-03
-      PC_C1: 19.476016e06
-      PC_C2: 1
-      backscatter_C0: 117.31325e-09
-      backscatter_C1: 14.606347
+      Chl_C0: 4.509943e-03
+      Chl_C1: 2.7024982e06
+      Chl_C2: 103.31017e-03
+      PC_C0: 20.063099e-03
+      PC_C1: 3.4030602e06
+      PC_C2: 1.0
+      backscatter_C0: -463.84545e-09
+      backscatter_C1: 11.237395
   oxygen:
     make: JFE Advantech
     model: AROD-FT
-    serial: '0066'
+    serial: '0070'
     long_name: JFE Advantech RINKO-FT
     make_model: JFE Advantech AROD_FT
     factory_calibrated: 'Yes'
     two_point_calibrated: 'Yes'
-    calibration_date: '2024-06-06'
+    calibration_date: '2023-08-26'
     calibration_parameters:
-      d0: 8.148819e-05
-      d1: -1.680660e-01
-      d2: 1.947194e-01
+      d0: 6.707286e-05
+      d1: -1.847810e-01
+      d2: 1.968775e-01
       d3: 0.0
       d4: 0.0
-      c0: 0.002875601
-      c1: 0.0001227918
-      c2: 2.748141e-06
+      c0: 2.911369e-03
+      c1: 1.243058e-04
+      c2: 2.561515e-06
       e0: 1.0
-      Cp: 0.0038
-      A: -12.45549
-      B: 0.001472191
-      C: -2.561056e-08
-      D: 5.818844e-13
-      E: "-7.120555\u0435-18"
-      F: 4.532106e-23
+      Cp: 4.000000e-03
+      A: -1.291570e+01
+      B: 1.475098e-03
+      C: -2.620010e-08
+      D: +6.117645e-13
+      E: -7.783219e-18
+      F: 5.064287e-23
   AD2CP:
     make: Nortek
     model: AD2CP
-    serial: '104640'
+    serial: '104648'
     long_name: Nortek Glider1000 AD2CP
     make_model: Nortek AD2CP
     factory_calibrated: 'Yes'
-    calibration_date: '2024-02-10'
+    calibration_date: '2023-08-16'
   irradiance:
     make: Biospherical
     model: MPE-PAR
-    serial: '3194'
+    serial: '3197'
     tailward_mounting_angle_relative_to_platform_z_axis_degrees: 17.71
     long_name: Biospherical MPE-PAR
     make_model: Biospherical MPE-PAR
@@ -354,7 +355,7 @@ netcdf_variables:
     coordinates: time depth latitude longitude
     instrument: instrument_scatterometer
   phycocyanin:
-    source: TRIDENTE_PHYCOCYANIN
+    source: TRIDENTE_FDOM
     long_name: phycocyanin
     standard_name: phycocyanin
     units: mg m-3
@@ -480,6 +481,3 @@ qc:
     value: 4
     comment: Tridente phycocyanin channel values are suspect. The cause is under investigation
       and appears to be due to bad calibration https://observations.voiceoftheocean.org/static/img/reports/Quality_Issue_5_tridente_phycocyanin.pdf
-  chlorophyll:
-    value: 4
-    comment: No evident signal during expected bloom after calibration
