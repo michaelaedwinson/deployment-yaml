@@ -209,6 +209,11 @@ class ConfigReader:
                 self.mission_raw_dir = raw_mission_dirs[0]
             else:
                 self.mission_raw_dir = self.mission_dir
+        elif 'SEA' in self.mission_dir.parts[-2] or 'SHW' in self.mission_dir.parts[-2] :
+            platform =  self.mission_dir.parts[-2].split('_')[0]
+            mission =  self.mission_dir.parts[-1].split('_M')[1]
+            mission_str_raw = f"{platform}_M{mission}"
+            self.mission_raw_dir = self.mission_dir
 
         else:
             if list(self.mission_dir.glob("seapayload_S*")):
@@ -608,6 +613,7 @@ def run_local(all_files=False):
         directories = [fn.parent for fn in msn_files]
     else:
         directories = [
+        '/mnt/docs/1_Operations/Missions/03_SAMBA_02/07_SAMBA_02_007/SHW004_PLD175/202609DD_M10',
         '/mnt/docs/1_Operations/Missions/03_SAMBA_02/07_SAMBA_02_007/SHW003_PLD174/20260729_M14',
         '/mnt/docs/1_Operations/Missions/21_InTail/SEA076_PLD090/20260614_M48',
         "/mnt/docs/1_Operations/Missions/03_SAMBA_02/07_SAMBA_02_007/SEA056_PLD073/20260314_M103",
