@@ -437,12 +437,12 @@ netcdf_variables:
     long_name: microrider average temperature probe 2
     units: None
     coordinates: time depth latitude longitude
-  microrider_shear_standar_deviation_1:
+  microrider_shear_standard_deviation_1:
     source: MR1000G-RDL_SH1_STD
     long_name: microrider standard deviation of shear probe 1
     units: None
     coordinates: time depth latitude longitude
-  microrider_shear_standar_deviation_2:
+  microrider_shear_standard_deviation_2:
     source: MR1000G-RDL_SH2_STD
     long_name: microrider standard deviation of shear probe 2
     units: None
