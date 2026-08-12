@@ -248,11 +248,6 @@ netcdf_variables:
     long_name: glider voltage
     units: V
     coordinates: time depth latitude longitude
-  altimeter:
-    source: Altitude
-    long_name: glider altimeter reading
-    units: m
-    coordinates: time depth latitude longitude
   dead_reckoning:
     source: DeadReckoning
     long_name: dead reckoning
@@ -421,16 +416,36 @@ netcdf_variables:
     units: m s-1
     coordinates: time depth latitude longitude
   tke_dissipation_shear_1:
-    source: MR1000G-RDL_LOG10_EPS1
-    long_name: log10 of turbulent kinetic energy dissipation shear 1
+    source: MR1000G-RDL_EPS1
+    long_name: turbulent kinetic energy dissipation shear 1
     standard_name: specific_turbulent_kinetic_energy_dissipation_in_sea_water
-    units: log10 W kg-1
+    units: W kg-1
     coordinates: time depth latitude longitude
   tke_dissipation_shear_2:
-    source: MR1000G-RDL_LOG10_EPS1
-    long_name: log10 of turbulent kinetic energy dissipation shear 2
+    source: MR1000G-RDL_EPS2
+    long_name: turbulent kinetic energy dissipation shear 2
     standard_name: specific_turbulent_kinetic_energy_dissipation_in_sea_water
-    units: log10 W kg-1
+    units: W kg-1
+    coordinates: time depth latitude longitude
+  microrider_temperature_average_1:
+    source: MR1000G-RDL_T1_AVG
+    long_name: microrider average temperature probe 1
+    units: None
+    coordinates: time depth latitude longitude
+  microrider_temperature_average_2:
+    source: MR1000G-RDL_T2_AVG
+    long_name: microrider average temperature probe 2
+    units: None
+    coordinates: time depth latitude longitude
+  microrider_shear_standar_deviation_1:
+    source: MR1000G-RDL_SH1_STD
+    long_name: microrider standard deviation of shear probe 1
+    units: None
+    coordinates: time depth latitude longitude
+  microrider_shear_standar_deviation_2:
+    source: MR1000G-RDL_SH2_STD
+    long_name: microrider standard deviation of shear probe 2
+    units: None
     coordinates: time depth latitude longitude
   oxygen_ad_counts:
     source: AROD_FT_DO_AN
