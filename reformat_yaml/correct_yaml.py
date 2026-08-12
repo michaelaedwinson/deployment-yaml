@@ -292,9 +292,34 @@ def standardise_yaml_format(yaml_path):
     with open(yaml_path, "w") as fout:
         yaml.dump(deployment, fout, sort_keys=False)
 
-if __name__ == '__main__':
+        
+def for_ioos_compliance(yaml_path):
+    with open(yaml_path) as fin:
+        deployment = yaml.safe_load(fin)
+    for var_name, attrs in deployment['netcdf_variables'].items():
+        if type(attrs) is not dict:
+            continue
+        for key, val in attrs.items():
+            if key not in ['precision', 'resolution', 'valid_min', 'valid_max']:
+                continue
+            if type(val) is not str:
+                continue
+            if '.' in val:
+                deployment['netcdf_variables'][var_name][key] = float(val)
+            else:
+                deployment['netcdf_variables'][var_name][key] = int(val)
+    yaml_out = str(yaml_path).replace('.yml', '_ioos.yml')
+    with open(yaml_out, "w") as fout:
+        yaml.dump(deployment, fout, sort_keys=False)
+
+
+def main():
     yaml_files = list(Path("../mission_yaml").glob("*.yml"))
     yaml_files.sort()
     for yml in yaml_files:
         #standardise_yaml_format(yml)
         flag_phycocyanin(yml)
+
+
+if __name__ == '__main__':
+    main()
